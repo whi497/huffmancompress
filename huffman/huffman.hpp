@@ -1,53 +1,43 @@
 #include"user.h"
-extern int forks;
+
 typedef class Node{
 public:
     char data;
     int weight;
-    Node** child;
+    Node *leftchild,*rightchild;
     Node* next;
-    Node(){data='^',weight=0;
-            child=new Node* [forks];
-            for(int i=0;i<forks;i++){
-            child[i]=nullptr;}
-            next = nullptr;}
+    Node(){data='^',weight=0;leftchild=NULL;rightchild=NULL;next=NULL;}
     Node* make_node(char data, int weight, Node* leftchild, Node* rightchild);
 }HTNode,*HuffmanTree;
 
 // typedef char**HuffmanCode;
-// typedef unordered_map<char,string> HuffmanCode;
-    
-inline Node* make_node(char data, int weight, Node** child){
+typedef unordered_map<char,string> HuffmanCode;
+
+inline Node* make_node(char data, int weight, Node* leftchild, Node* rightchild){
     Node* node=new Node();
     node->data= data;
     node->weight = weight;
-    if(child!=nullptr){
-        for(int i=0; i<forks ;i++){
-            node->child[i]=child[i];
-        }
-    }
-    node->next=nullptr;
+    node->leftchild= leftchild;
+    node->rightchild = rightchild;
+    node->next=NULL;
     return node;
 }
 
 bool check_leaf(HuffmanTree node){
     if(!node){
         cout << "huffmantree error: node is NULL" << endl;
-        exit(0);
     }
-    if(node->child[0] == nullptr)
-    return 1;
-    else
-    return 0;
+    if(node->leftchild==NULL&&node->rightchild==NULL){return 1;}
+    else return 0;
 }
 
-// struct comparator
-// {
-//     bool operator()(const HuffmanTree leftchild, const HuffmanTree rightchild) const
-//     {
-//         return leftchild->weight > rightchild->weight;
-//     }z
-// };
+struct comparator
+{
+    bool operator()(const HuffmanTree leftchild, const HuffmanTree rightchild) const
+    {
+        return leftchild->weight > rightchild->weight;
+    }
+};
 
 class priorityquene{
 public:
@@ -63,7 +53,7 @@ public:
 };
 
 HTNode* priorityquene::top(){
-    if(empty())return nullptr;
+    if(empty())return NULL;
     else return head->next;
 }
 
@@ -76,7 +66,7 @@ HTNode* priorityquene::pop(){
     else{
         p=head->next;
         head->next=p->next;
-        p->next=nullptr;
+        p->next=NULL;
         size--;
     }
     return p;

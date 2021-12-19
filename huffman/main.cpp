@@ -14,8 +14,6 @@ Status ReCreateHuffman(ifstream& ist,HuffmanTree& root);
 Status HuffmanDecoder(HuffmanTree& root,ifstream& ist, ofstream& ost);
 
 int lastvaildbit=0;
-int forks=0;
-int codebit=1;
 string input_filename;
 string output_filename;
 headfile headinformation;
@@ -39,15 +37,15 @@ int main(int argc,char **argv){
 
 //help说明 
     if (cmdOptionExists(argv, argv + argc, "-h")) {
-        cout << "HUFFMAN comress program" << endl << endl;
+        cout << "This is a program which can compress you file" << endl << endl;
         cout << "\e[1mUsage\e[0m" << endl;
         cout << "./main.exe\t\e[1m[OPTION]\e[0m ... \e[1m[FILE]\e[0m ..." << endl << endl;
         cout << "\e[1mOptions\e[0m" << endl;
         cout << "-h : print out help information" << endl;
         cout << "-f : the path for the input file" << endl; //-f 后应接文件路径及文件名
         cout << "-o : the path for the output file" << endl;//-o 接输出路径文件名可不带
-        cout << "-c : compress the input file" << endl;     // 压缩时应指定-c(compress)
-        cout << "-d : decode the input file" << endl;       //解压时应指定-d(decode)
+        cout << "-c : compress the input file" << endl;     // 压缩时应指定-c
+        cout << "-d : decode the input file" << endl;       //解压时应指定-o
         cout <<endl;
         return 0;
     }
@@ -58,7 +56,6 @@ int main(int argc,char **argv){
 
     auto input_info = getCmdOption(argv, argv + argc, "-f");
     auto output_info = getCmdOption(argv, argv + argc, "-o");
-    auto cmode = getCmdOption(argv, argv + argc, "-c");
     if (input_info.first) {
         input_filename = input_info.second;
     } 
@@ -67,42 +64,18 @@ int main(int argc,char **argv){
         return 0;
     }
 
-
-    if (cmdOptionExists(argv,argv + argc, "-c")){
-        if (output_info.first) {
-            output_filename = output_info.second + ".yza";
-        } 
-        else {
+    if (output_info.first) {
+        output_filename = output_info.second + ".yza";
+    } 
+    else {
+        if (cmdOptionExists(argv,argv + argc, "-c")){
             output_filename = input_filename + ".yza";
         }
-    }else if(cmdOptionExists(argv, argv + argc, "-d")){
-        if (output_info.first) {
-            output_filename = output_info.second;
-        } 
         else{
             cout<<"No output filename specified, previous file may lost."<<endl;
             system("pause");
             output_filename="";
         }
-    }else 
-    {
-        cout<<"no function specified, please add \033[1m-c\033[1m or \033[1m-d\033[1m to command line"<<endl;
-        exit(1);
-    }
-
-    if(cmode.first){
-        forks = atoi(cmode.second.c_str());
-        if (forks == 2); 
-        else if(forks>=3&&forks<=4)codebit=2;
-        else if(forks>=5&&forks<=8) codebit=3;
-        else if(forks>=9&&forks<=16) codebit=4;
-        else{
-            cout << "overrange of forks" << endl;
-            exit(ERROR);
-        }
-    }
-    else{
-        forks = 2;
     }
 
 //压缩与解压缩**************************************************************
@@ -115,12 +88,12 @@ int main(int argc,char **argv){
             if(input_filename[i]==92)break;
         }
         headinformation.filename = input_filename.substr(i+1, input_filename.length());
-        headinformation.num = forks;
         ofstream ost;
         ost=fileput(output_filename);
         Readingangcouting(ist);
         HuffmanTree root;
         CreateHuffmanTree(root);
+        HuffmanCode code;
         cout<<"creating the huffmancode..."<<endl;
         CreateHuffmanCode(root,"");
         show_hfmcode();
@@ -150,34 +123,25 @@ Status Readingangcouting(ifstream& ist){//统计频率
         ist.read(&buf,sizeof(char));
         freq.ListInsert(buf);
     }
+    headinformation.num=freq.size;
     return OK;
 }
 
 Status CreateHuffmanTree(HuffmanTree& tree){
-    int addi=0; 
-    int weight=0; 
     priorityquene Q;
     if(freq.empty()){cout<<"empty list"<<endl;exit(ERROR);}
     flnode p;
     for (p=freq.head->next;p;p=p->next) {
-        HTNode* node=make_node(p->data,p->freq,nullptr);
+        HTNode* node=make_node(p->data,p->freq, nullptr, nullptr);
         Q.push(node);
-    }
-    addi=(Q.size-1)%(forks-1);
-    if(addi)addi = forks-1-addi;
-    for(int i=0;i<addi;i++){
-        HTNode* node=make_node('~',0,nullptr);
-        Q.push(node);
-    }
+    } 
     cout<<"building the huffmantree..."<<endl;
     while(Q.size!=1){
-        HTNode** child=new HTNode* [forks];
-        for(int i=0;i<forks;i++){
-            child[i]=Q.top();
-            Q.pop();
-            weight+=child[i]->weight;
-        }
-        HuffmanTree father=make_node('^',weight,child);
+        HuffmanTree left=Q.top();
+        Q.pop();
+        HuffmanTree right=Q.top();
+        Q.pop();
+        HuffmanTree father=make_node('^',left->weight+right->weight,left,right);
         Q.push(father);
     }
     tree=Q.top();
@@ -197,11 +161,8 @@ Status CreateHuffmanCode(HuffmanTree& tree,string str){
         }
     }
     else {
-        for(int i=0; i<forks ;i++){
-            // if(tree->child[i]->data=='~')continue;
-            string temp=numtostr(i,codebit);
-            CreateHuffmanCode(tree->child[i],str+temp);
-        }
+        CreateHuffmanCode(tree->leftchild, str+"0");
+        CreateHuffmanCode(tree->rightchild,str+"1");
     }
     return OK;
 }
@@ -214,35 +175,30 @@ Status show_hfmcode(){
     for(p=freq.head->next;p;p=p->next){
         cout<<"|"<<p->data<<"\t|"<<p->code<<"\t|"<<endl;
     }
+    headinformation.num=freq.size;
     printline();
     cout<<endl;
     return OK;
 }
 
-Status writehuffmantree(HuffmanTree& tree,ofstream& ost){
-    if(!tree){
+Status writehuffmantree(HuffmanTree& root,ofstream& ost){
+    if(!root){
         cout<<"error at writing huffmantree or no huffmantree"<<endl;
         exit(ERROR);
     }
     else{
-        ost<<tree->data;
-        if(tree->child[0]){
-            ost<<"0";
-            for(int i=0; i<forks ;i++){
-                    writehuffmantree(tree->child[i],ost);
-            }
-        }else ost<<"1";
+        ost<<root->data;
         // cout<<root->data;//test
-        // if(root->leftchild){
-        //     ost<<'0';
-        //     // cout<<'0';
-        //     writehuffmantree(root->leftchild,ost);
-        //     writehuffmantree(root->rightchild,ost);
-        // }
-        // else{
-        //     ost<<'1';
-        //     // cout<<'1';
-        // }
+        if(root->leftchild){
+            ost<<'0';
+            // cout<<'0';
+            writehuffmantree(root->leftchild,ost);
+            writehuffmantree(root->rightchild,ost);
+        }
+        else{
+            ost<<'1';
+            // cout<<'1';
+        }
     }    return OK;
 }
 
@@ -287,7 +243,7 @@ Status write_compressfile(ifstream& ist,ofstream& ost,HuffmanTree& root){
         headinformation.lastvaildbit=bit;
         ost.write((char*)&temp,sizeof(unsigned char));
         temp=0;
-    }else {temp = 0; ost.write((char*)&temp,sizeof(unsigned char));}
+    }
     ost<<lastvaildbit;
     ist.close();
     ost.close();
@@ -302,20 +258,19 @@ Status ReCreateHuffman(ifstream& ist,HuffmanTree& root){//重新构建huffumantr
     ist.read(&data,sizeof(char));
     ist.read(&label,sizeof(char));
     if(label=='1'){
-        root=make_node(data,0,nullptr);
+        root=make_node(data,0,nullptr,nullptr);
         return OK;
     }
     else{
         root=new HTNode();
-        for(int i=0;i<forks ;i++){
-            ReCreateHuffman(ist,root->child[i]);
-        }
+        ReCreateHuffman(ist,root->leftchild);
+        ReCreateHuffman(ist,root->rightchild);
         return OK;
     }
     return OK;
 }
 
-Status HuffmanDecoder(HuffmanTree& tree,ifstream& ist, ofstream& ost){//解压缩
+Status HuffmanDecoder(HuffmanTree& root,ifstream& ist, ofstream& ost){//解压缩
     int i=0;
     char uselesschar;
     unsigned char temp;
@@ -324,9 +279,9 @@ Status HuffmanDecoder(HuffmanTree& tree,ifstream& ist, ofstream& ost){//解压�
     long long filesize;
     long long cuplace=0;
     HuffmanTree p;
-    string filename = output_filename;
+    string filename;
 
-//ist文件处理及头信息获取和处理***************************
+//ist文件处理及头信息获取***************************
 
     ist.seekg(0L,ist.end);
     filesize=ist.tellg();
@@ -339,15 +294,6 @@ Status HuffmanDecoder(HuffmanTree& tree,ifstream& ist, ofstream& ost){//解压�
     ist.clear();
     ist.seekg(0L,ist.beg);
     ist>>headinformation.filename>>headinformation.num;
-    forks = headinformation.num;
-    if (forks == 2); 
-    else if(forks>=3&&forks<=4)codebit=2;
-    else if(forks>=5&&forks<=8) codebit=3;
-    else if(forks>=9&&forks<=16) codebit=4;
-    else{
-        cout << "overrange of forks" << endl;
-        exit(ERROR);
-    }
     if(filename.empty())
         filename=headinformation.filename;
     else
@@ -364,10 +310,10 @@ Status HuffmanDecoder(HuffmanTree& tree,ifstream& ist, ofstream& ost){//解压�
     // }
     ist.read(&uselesschar,sizeof(char));
     cout<<"Rebuilding HuffmanTree..."<<endl;
-    ReCreateHuffman(ist,tree);
+    ReCreateHuffman(ist,root);
     ist.read(&uselesschar,sizeof(char));
     cuplace=ist.tellg();
-    p=tree;
+    p=root;
 // 调试
     // unordered_map <char,long>::iterator it;
     // for(it=freq.begin();it!=freq.end();it++){
@@ -383,29 +329,25 @@ Status HuffmanDecoder(HuffmanTree& tree,ifstream& ist, ofstream& ost){//解压�
     // CreateHuffmanTree(root,freq);
 
 //读写译码*****************************************
-    int place = 0;
-    int getplace = 0;
+
     cout<<"decoding the file..."<<endl;
-    string test;//to be deleted
+    string test;
     ist.read((char*)&temp,sizeof(unsigned char));
     while(!ist.eof()){
         if(check_leaf(p)){
             ost.write(&(p->data),sizeof(char));
             test+=p->data;
-            p=tree;
+            p=root;
+            if(cuplace==filesize-1)
             if(cuplace>=(filesize-1)&&bit>=lastvaildbit){
                 break;
             }
         }
-        // place = forkdir(temp,bit);
         if(check_byte(temp,bit)){
-            place += pow(2,codebit-getplace-1);
+            p=p->rightchild;
         }
-        getplace++;
-        if(getplace == codebit){
-            getplace =0;
-            p=p->child[place];
-            place = 0;
+        else{
+            p=p->leftchild;
         }
         bit++;
         if(bit>=8){
@@ -416,14 +358,6 @@ Status HuffmanDecoder(HuffmanTree& tree,ifstream& ist, ofstream& ost){//解压�
     }
     ist.close();
     ost.close();
-    cout<<"success in decoding!\nthe output file is "<<filename<<endl;
     return OK;
 }
 
-// int forkdir(char temp,int bit){
-//     int place=0;
-//     for(int i=0;i<codebit;i++){
-//         if(check_byte(temp,bit))place=pow(2,i);
-//     }
-//     return place;
-// }
