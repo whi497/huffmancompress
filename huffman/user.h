@@ -10,6 +10,8 @@
 #define check_byte(byte,  bit) (((byte) & (1 << ((bit)))) != 0)
 #define set_byte1(byte, bit) ((byte) |= (1<<bit))
 #define set_byte0(byte, bit) ((byte) &= (~(1 << bit)))
+#define HI_NIBBLE(b) (((b) >> 4) & 0x0F)
+#define LO_NIBBLE(b) ((b) & 0x0F)
 // #define num_0 "0000"
 // #define num_1 "0001"
 // #define num_2 "0010"

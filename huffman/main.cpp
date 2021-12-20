@@ -52,7 +52,7 @@ int main(int argc,char **argv){
 
 //获得输入输出文件名称，输入必须有
 //输出没有时在压缩时默认为com.yza,存在时为输入文件名加上.yza后缀
-//在解压时不指定输出路径默认使用原文件名解压到当前文件夹，这会覆盖原文件会提示注意。
+//在解压时不指定输出路径默认使用原文件名解压到当前文件夹，这会覆盖原文件程序会提示注意。
 
     auto input_info = getCmdOption(argv, argv + argc, "-f");
     auto output_info = getCmdOption(argv, argv + argc, "-o");
@@ -107,7 +107,6 @@ int main(int argc,char **argv){
     }
     return 0;
 }//finished
-
 
 
 
