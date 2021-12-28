@@ -18,7 +18,7 @@ public:
 }HTNode,*HuffmanTree;
 
 // typedef char**HuffmanCode;
-// typedef unordered_map<char,string> HuffmanCode;//原stl方法
+// typedef unordered_map<char,string> HuffmanCode;
     
 inline Node* make_node(unsigned char* data, int weight, Node** child){
     Node* node=new Node();
@@ -46,7 +46,15 @@ bool check_leaf(HuffmanTree node){
     return 0;
 }
 
-class priorityquene{//优先队列
+// struct comparator
+// {
+//     bool operator()(const HuffmanTree leftchild, const HuffmanTree rightchild) const
+//     {
+//         return leftchild->weight > rightchild->weight;
+//     }z
+// };
+
+class priorityquene{
 public:
     HuffmanTree head;
     HuffmanTree tail;

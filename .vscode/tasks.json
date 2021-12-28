@@ -2,16 +2,16 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "C/C++: g++ 生成活动文件",
-            "command": "/usr/bin/g++",
+            "label": "C/C++: g++.exe 生成活动文件",
+            "command": "D:\\wh030917\\Microsoft VS Code\\mingw64\\bin\\g++.exe",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
                 "${file}",
-                "file.hpp",
-                "huffman.hpp",
+                "${fileDirname}\\file.hpp",
+                "${fileDirname}\\huffman.hpp",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
             ],
             "options": {
                 "cwd": "${fileDirname}"

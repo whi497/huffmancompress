@@ -6,10 +6,14 @@
 #define ERROR 0
 #define INFEASIBLE -1
 #define OVERFLOW -2
-//置位宏函数
+//字节处理宏定义
 #define check_byte(byte,  bit) (((byte) & (1 << ((bit)))) != 0)
 #define set_byte1(byte, bit) ((byte) |= (1<<bit))
 #define set_byte0(byte, bit) ((byte) &= (~(1 << bit)))
+#define dihead_byte(res, byte) ((res = (byte>>4)&0xF))
+#define ditail_byte(res, byte) ((res = byte&0xF))
+#define sethead_byte(byte, data) ((byte = (data<<4)&0xF0))
+#define settail_byte(byte, data) ((byte = (byte|0xF)&(data|0xF0)))
 // #define num_0 "0000"
 // #define num_1 "0001"
 // #define num_2 "0010"
@@ -30,10 +34,6 @@
 #include <ostream>
 #include <sstream>
 #include <fstream>
-#include <algorithm>
-#include <vector>
-#include <unordered_map>
-#include <queue>
 #include <string>
 #include <string.h>
 #include <cmath>
@@ -60,9 +60,8 @@ const string num_c[16]={
             "1111",
 };
 
-inline Status printline(){
+inline void printline(){
     cout<<"__________________________"<< endl;
-    return OK;
 }
 
 inline string numtostr(int i,int length){

@@ -1,15 +1,26 @@
 #include"user.h"
 
+extern int byunit;
+
+inline bool is_samech(unsigned char* a, unsigned char* b){
+    bool res=1;
+    for(int i=0;i<byunit ;i++){
+        if(a[i]!=b[i])res=0;
+    }
+    return res;
+}
+
 class headfile{
 public:
     string filename;
     unsigned char lastvaildbit;
-    int num;
+    unsigned char laststraghtbit;
 };
 
 struct frequency{
-    char data;
+    unsigned char* data;
     int freq;
+    frequency(){data = new unsigned char [byunit];}
 };
 
 ifstream& open_ifile(ifstream& in,const string& name){
@@ -48,28 +59,29 @@ ofstream fileput(const string& filename){
 
 typedef class FLNode{
 public:
-    char data;
+    unsigned char* data;
     long freq;
     string code;
     FLNode* next;
-    FLNode(char da, long fr,string co){data=da;freq=fr;code=co;next=NULL;}
+    FLNode(){data = nullptr; freq =0;code="";next=nullptr;}
+    FLNode(unsigned char* da, long fr,string co){data=da;freq=fr;code=co;next=NULL;}
 }* flnode;
 
 class findlist{
 public:
     flnode head;
     int size;
-    findlist(){head=new FLNode('\0',0,"");size=0;}
+    findlist(){head=new FLNode(nullptr,0,"");size=0;}
     bool empty(){if(!head->next)return 1;else return 0;}
-    flnode find(char elem);
-    Status ListInsert(char elem);
+    flnode find(unsigned char* elem);
+    Status ListInsert(unsigned char*& elem);
 };
 
-flnode findlist::find(char elem){
+flnode findlist::find(unsigned char* elem){
     if(empty())return NULL;
     else{
         for(flnode p=head->next;p;p=p->next){
-            if(p->data==elem){
+            if(is_samech(p->data,elem)){
                 return p;
             }
         }
@@ -77,7 +89,7 @@ flnode findlist::find(char elem){
     return NULL;
 }
 
-Status findlist::ListInsert(char elem){
+Status findlist::ListInsert(unsigned char*& elem){
     flnode p=find(elem);
     if(!p){
         size++;
@@ -87,6 +99,7 @@ Status findlist::ListInsert(char elem){
     }
     else{
         p->freq++;
+        free(elem);
     }
     return OK;
 }
