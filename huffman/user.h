@@ -7,13 +7,13 @@
 #define INFEASIBLE -1
 #define OVERFLOW -2
 //字节处理宏定义
-#define check_byte(byte,  bit) (((byte) & (1 << ((bit)))) != 0)
-#define set_byte1(byte, bit) ((byte) |= (1<<bit))
-#define set_byte0(byte, bit) ((byte) &= (~(1 << bit)))
-#define dihead_byte(res, byte) ((res = (byte>>4)&0xF))
-#define ditail_byte(res, byte) ((res = byte&0xF))
-#define sethead_byte(byte, data) ((byte = (data<<4)&0xF0))
-#define settail_byte(byte, data) ((byte = (byte|0xF)&(data|0xF0)))
+#define check_byte(byte,  bit) (((byte) & (1 << ((bit)))) != 0)//检查byte的第bit位为1还是0
+#define set_byte1(byte, bit) ((byte) |= (1<<bit))//设置byte的第bit位为1
+#define set_byte0(byte, bit) ((byte) &= (~(1 << bit)))//设置byte的第bit位为0
+#define dihead_byte(res, byte) ((res = (byte>>4)&0xF))//获取byte的前四位即前半字节
+#define ditail_byte(res, byte) ((res = byte&0xF))//获取byte的后四位即后半字节
+#define sethead_byte(byte, data) ((byte = (data<<4)&0xF0))//将byte的前半字节置为data
+#define settail_byte(byte, data) ((byte = (byte|0xF)&(data|0xF0)))//将byte的后半字节置位data
 // #define num_0 "0000"
 // #define num_1 "0001"
 // #define num_2 "0010"
